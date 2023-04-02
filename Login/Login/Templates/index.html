@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Ajax Popup Login &amp; Signup with jQuery</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic'>
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css'>
+<link rel="stylesheet" href="{% static 'style.css' %}">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div class="container">
+		<h1>Ajax Modal/Popup Login & Signup</h1>
+		<a id="modal_trigger" href="#modal" class="btn">Click here to Login or register</a>
+
+		<div id="modal" class="popupContainer" style="display:none;">
+				<header class="popupHeader">
+						<span class="header_title">Login</span>
+						<span class="modal_close"><i class="fa fa-times"></i></span>
+				</header>
+
+				<section class="popupBody">
+						<!-- Social Login -->
+						<div class="social_login">
+								<div class="">
+										<a href="#" class="social_box fb">
+												<span class="icon"><i class="fa fa-facebook"></i></span>
+												<span class="icon_title">Connect with Facebook</span>
+
+										</a>
+
+										<a href="#" class="social_box google">
+												<span class="icon"><i class="fa fa-google-plus"></i></span>
+												<span class="icon_title">Connect with Google</span>
+										</a>
+								</div>
+
+								<div class="centeredText">
+										<span>Or use your Email address</span>
+								</div>
+
+								<div class="action_btns">
+										<div class="one_half"><a href="#" id="login_form" class="btn">Login</a></div>
+										<div class="one_half last"><a href="#" id="register_form" class="btn">Sign up</a></div>
+								</div>
+						</div>
+
+						<!-- Username & Password Login form -->
+						<div class="user_login">
+							<section class="login" id="login">
+								<form action="#" method="POST" id="login-form" class="login-form" novalidate>{% csrf_token %}
+										<label>Username</label>
+										<input type="text" id="current-username" name="current-username" autocomplete="section-register shipping username" />
+										<p class="text-danger text-center" id="no-user-error" style="display:none;color: red;">We didn't find you! Please Register</p>
+										<br />
+
+										<label>Password</label>
+										<input type="password" id="current-password" name="current-password" autocomplete="section-register shipping current-password" />
+										<p class="text-danger text-center" id="password-error" style="display:none;color: red;">Wrong Password!</p>
+										<br />
+										<p class="text-danger text-center" id="error" style="display:none;color: red;">There was an error please try again later.</p>
+										<div class="action_btns">
+												<div class="one_half"><a href="#" class="btn back_btn"><i class="fa fa-angle-double-left"></i> Back</a></div>
+                        <button class="one_half last btn btn_red" type="submit" id="login-submit" name="login-submit" aria-hidden="true">
+                          Login
+                        </button>
+                           
+										</div>
+								</form>
+							</section>
+						</div>
+
+						<!-- Register Form -->
+						<div class="user_register">
+							<section class="signup" id="signup">
+                <form action="#" method="POST" id="signup-form" class="signup-form" novalidate>{% csrf_token %}
+										<label>Username</label>
+										<input type="text" id="username" name="username" autocomplete="section-register shipping username" />
+										<br />
+										<label>Email Address</label>
+										<input type="text" id="email" name="email" autocomplete="section-register shipping email" />
+										<br />
+										<label>Password</label>
+										<input type="password" id="new-password" name="new-password" autocomplete="section-register shipping new-password" />
+										<br />
+										<p class="text-danger text-center" id="username_error" style="display:none;color: red;">We didn't find you! Please Register</p>
+										<div class="action_btns">
+												<div class="one_half"><a href="#" class="btn back_btn"><i class="fa fa-angle-double-left"></i> Back</a></div>
+												<button class="one_half last btn btn_red" type="submit" id="register-submit" name="register-submit" aria-hidden="true">
+                          Register
+                        </button>
+										</div>
+								</form>
+							 </section>
+						</div>
+				</section>
+		</div>
+</div>
+<!-- partial -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script src='https://leanmodal.finelysliced.com.au/js/jquery.leanModal.min.js'></script>
+<script  src="{% static 'script.js' %}"></script>
+<script type="text/javascript">
+	/* Login Form AJAX */
+    $('#login-form').submit(function(e){
+      var submitBtn = $(this).find('input[type=submit]');
+      submitBtn.prop('disabled', true);
+      e.preventDefault();
+      $.ajax({
+        url: "{% url 'user_login' %}", // the file to call
+        type: "POST", // GET or POST
+        data: $(this).serialize(), // get the form data
+        success: function(data){
+          var login_response = jQuery.parseJSON(data);
+          console.log(login_response);
+          if (login_response.user == "nouser"){
+            $('#no-user-error').css('display', 'block');
+            submitBtn.prop('disabled', false);
+          }
+          else if (login_response.user == "password wrong") {
+            $('#password-error').css('display', 'block');
+            submitBtn.prop('disabled', false);
+          } 
+          else {
+            if (login_response.login == "Failed") {
+              alert("Invalid Login!");
+            } else {
+							$(".popupContainer").hide();
+              setTimeout(function() {
+              location.reload();
+              }, 400);
+            }
+          }  
+        },/* end of Success */
+        error: function(data) {
+          $('#error').css('display', 'block');
+        }/*  end of error */
+      });/*./ajax*/
+    });
+	/*End of loin form AJAX */
+
+  /* Signup Form AJAX */
+  	$('#signup-form').submit(function(e){
+      var submitBtn = $(this).find('input[type=submit]');
+      submitBtn.prop('disabled', true);
+      e.preventDefault();
+      $.ajax({
+        url: "{% url 'user_signup' %}", // the file to call
+        type: "POST", // GET or POST
+        data: $(this).serialize(), // get the form data
+        success: function(data){
+          var signup_response = jQuery.parseJSON(data);
+          if (signup_response.register == "Success") {
+
+          }
+          else if(signup_response.register == "Error"){
+          		var p = document.getElementById('username_error');
+              p.textContent = signup_response.username_error;
+              p.style.display = 'block';
+          }
+        },/* end of Success */
+      });/*./ajax*/
+  	});
+  /* End of Signup Form */
+</script>
+
+</body>
+</html>
